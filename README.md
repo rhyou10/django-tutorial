@@ -23,7 +23,7 @@ py -m jango
 ### Django 프로젝트 만들기, 실행, 앱생성
 
 ```
-django-admin startproject mysite
+django -admin startproject mysite
 
 py mange.py runserver
 
