@@ -1,10 +1,12 @@
 from re import template
 from django.shortcuts import render
 
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.template import loader
-from .models import Question
+from .models import Choice, Question
 from django.shortcuts import render, get_object_or_404
+
+from django.urls import reverse
 
 def index(request):
     #1
@@ -49,4 +51,19 @@ def results(request, question_id):
 
 
 def vote(request, question_id):
-    return HttpResponse("you're voting on question %s." % question_id)
+    question = get_object_or_404(Question, pk=question_id)
+    try:
+        selected_choice = question.choice_set.get(pk=request.post['choice'])
+    except(KeyError, Choice.DoesNotExitst):
+        #돌려보낸다 
+        return render(request, 'polls/detail.html', {
+            'question' : question,
+            'error_message' : "you didn't select a choice.",
+        })
+
+    else:
+        selected_choice.votes +=1
+        selected_choice.save()
+        # 항상 저장해야지 서버에 들어가는거 인지해야한다.
+
+    return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
