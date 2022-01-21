@@ -1,14 +1,14 @@
 from re import template
-from django.shortcuts import render
 
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.template import loader
 from .models import Choice, Question
 from django.shortcuts import render, get_object_or_404
+from django.views import generic
 
 from django.urls import reverse
 
-def index(request):
+#def index(request):
     #1
     #latest_question_list = Question.objects.order_by('-pub_date')[:5]
     #output = ', '.join([q.question_text for q in latest_question_list])
@@ -21,15 +21,29 @@ def index(request):
     #return HttpResponse(template.render(context, request))
 
     #3 render 사용
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    context = {'latest_question_list': latest_question_list}
-    return render(request, 'polls/index.html', context)
+    #latest_question_list = Question.objects.order_by('-pub_date')[:5]
+    #context = {'latest_question_list': latest_question_list}
+    #return render(request, 'polls/index.html', context)
 
-    
+class IndexView(generic.ListView):
+    template_name = 'polls/index.html'
+    context_object_name = 'latest_question_list'
+
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Question.objects.order_by('-pub_date')[:5]
 
 # Create your views here.
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = 'polls/detail.html'
 
-def detail(request, question_id):
+
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = 'polls/results.html'
+
+#def detail(request, question_id):
     #1
     #return HttpResponse("you're looking at question %s." % question_id)
 
@@ -40,20 +54,20 @@ def detail(request, question_id):
     #except Question.DoesNotExist:
     #    raise Http404('Question does not exist')
     #return render(request, 'polls/detail.html',{'question' : question})
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/detail.html', {'question':question})
+ #   question = get_object_or_404(Question, pk=question_id)
+ #  return render(request, 'polls/detail.html', {'question':question})
 
 
 
-def results(request, question_id):
-    response = "you're lokking at the results of question %s."
-    return HttpResponse(response % question_id)
+#def results(request, question_id):
+#    question = get_object_or_404(Question, pk=question_id)
+#    return render(request, 'polls/results.html', {'question':question})
 
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
-        selected_choice = question.choice_set.get(pk=request.post['choice'])
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except(KeyError, Choice.DoesNotExitst):
         #돌려보낸다 
         return render(request, 'polls/detail.html', {
